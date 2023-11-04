@@ -11,10 +11,10 @@ survey <- survey[-which(num_missing_columns_per_row == 19), ]
 
 # Note that only one person identified as Indigenous, so that
 # variable was not considered here.
-#table(survey$Do.you.identify.as.an.Indigenous.Person.)
+table(survey$Do.you.identify.as.an.Indigenous.Person.)
 
 # Num postdocs
-num_postdocs = survey$How.many.postdoctoral.appointments.have.you.held.in.Canada.
+num_postdocs <- survey$How.many.postdoctoral.appointments.have.you.held.in.Canada.
 
 # Years postdoc
 years_postdoc <- survey$In.sum..for.how.many.years.have.you.been.a.postdoc.in.Canada.
@@ -29,7 +29,6 @@ first_permit_wait[which(first_permit_wait == 'More than 6 months')] <- '> 6'
 
 # First permit timing satisfaction
 first_permit_timing_satisfaction <- survey$How.satisfied.are.you.with.the.timing.for.the.issuance.of.your.first.work.permit.
-
 
 # Extended or applied for a second work permit (in Canada)?
 extended_or_applied_for_second <- survey$Have.you.extended.your.work.permit.applied.for.a.second.work.permit.while.in.Canada.
@@ -74,7 +73,6 @@ new_position_prevent <- survey$Has.your.closed.work.permit.prevented.you.from.ac
 new_position_prevent[which(new_position_prevent == 'No and this doesnt concern me')] <- 'No (and not concerned)'
 new_position_prevent[which(new_position_prevent == 'No, but I am concerned that this might happen')] <- 'No (but concerned)'
 new_position_prevent[which(new_position_prevent == 'Not applicable / I was not offered a new position yet')] <- 'Not applicable and/or not offered new position'
-new_position_prevent[which(new_position_prevent == 'Not applicable / I was not offered a new position yet')] <- 'Not applicable'
 new_position_prevent[which(new_position_prevent == 'Yes, I was not offered a specific position due to my closed work permit')] <- 'Yes'
 new_position_prevent[which(new_position_prevent == 'Yes, I was not offered the position due to my closed work permit')] <- 'Yes'
 new_position_prevent[which(new_position_prevent == 'Yes, I was offered a position but could not accept it')] <- 'Yes'

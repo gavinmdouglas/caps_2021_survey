@@ -1,6 +1,7 @@
 rm(list = ls(all.names = TRUE))
 
-# Investigation to what degree satisfaciton with the first permit timing 
+# Investigation to what degree satisfaction with the first permit timing 
+# This analysis was not included in the end.
 
 clean_data <- read.table('/Users/gavin/Drive/science_policy/SPE/data/2023.05.03_CAPS_survey/2021_CAPS_Workpermit_immigration_survey_responses_deidentified_prepped.txt',
                          header = TRUE, sep = '\t', stringsAsFactors = FALSE)
@@ -19,6 +20,8 @@ clean_data$extended_or_applied_for_second <- factor(clean_data$extended_or_appli
 clean_data$extended_or_applied_for_second_int <- 0
 clean_data$extended_or_applied_for_second_int[which(clean_data$extended_or_applied_for_second == 'Yes')] <- 1
 
+# Regress timing satisfaction against whether or not postdoc applied for second work permit or not.
+# With or without province included as a covariate.
 regress_second_permit_applied_no_province <- glm(clean_data$extended_or_applied_for_second_int ~ first_permit_timing_satisfaction,
                                                 data = clean_data,
                                                 family = 'binomial')

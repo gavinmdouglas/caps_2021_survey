@@ -6,7 +6,7 @@ library(ComplexHeatmap)
 library(reshape2)
 library(circlize)
 
-source('/Users/gavin/Drive/science_policy/SPE/data/2023.05.03_CAPS_survey/CAPS_survey_analysis/0 - utility functions.R')
+source('/Users/gavin/Drive/science_policy/SPE/data/2023.05.03_CAPS_survey/CAPS_survey_analysis/caps_2021_survey/0_utility_functions.R')
 
 # Province by (for first and second work permits):
   # (1) Timing satisfaction.
@@ -18,6 +18,7 @@ clean_data <- read.table('/Users/gavin/Drive/science_policy/SPE/data/2023.05.03_
 clean_data <- clean_data[which(! is.na(clean_data$province_min20)), ]
 clean_data$province_min20 <- factor(clean_data$province_min20, levels = c('Alberta', 'British Columbia', 'Ontario', 'Quebec', 'Saskatchewan'))
 
+# As before, perform pre-processing to determine which respondents' responses to consider regarding the first permit.
 clean_data_filt_for_second <- clean_data
 clean_data_filt_for_second <- clean_data_filt_for_second[which(clean_data_filt_for_second$extended_or_applied_for_second == 'Yes'), ]
 clean_data_filt_for_second <- clean_data_filt_for_second[which(clean_data_filt_for_second$years_postdoc != '<1'), ]
@@ -29,27 +30,29 @@ clean_data_filt_for_second <- clean_data_filt_for_second[which(! is.na(clean_dat
 kw_first_satis_by_province <- kruskal.test(first_permit_timing_satisfaction ~ province_min20, data = clean_data)
 
 boxplot_first_satis_by_province <- ggplot(data = clean_data, aes(x = province_min20, y = first_permit_timing_satisfaction)) +
-  geom_boxplot(fill = 'deepskyblue3',) +
-  theme_bw() +
-  xlab('Province') +
-  ylab('Satisfaction with permit wait-time') +
-  ggtitle('First work permit\n(Kruskal-Wallis Chi-squared: 0.99, df = 4, P = 0.91)') +
-  theme(plot.title = element_text(hjust = 0.5, size = 12))
+                                          geom_boxplot(fill = 'deepskyblue3',) +
+                                          theme_bw() +
+                                          xlab('Province') +
+                                          ylab('Satisfaction with permit wait-time') +
+                                          ggtitle('First work permit\n(Kruskal-Wallis Chi-squared: 0.99, df = 4, P = 0.91)') +
+                                          theme(plot.title = element_text(hjust = 0.5, size = 12))
 
 kw_second_satis_by_province <- kruskal.test(second_permit_timing_satisfaction ~ province_min20, data = clean_data_filt_for_second)
 
 boxplot_second_satis_by_province <- ggplot(data = clean_data_filt_for_second, aes(x = province_min20, y = second_permit_timing_satisfaction)) +
-  geom_boxplot(fill = 'deepskyblue3',) +
-  theme_bw() +
-  xlab('Province') +
-  ylab('Satisfaction with permit wait-time') +
-  ggtitle('Second work permit\n(Kruskal-Wallis Chi-squared: 13.88, df = 4, P = 0.0077)') +
-  theme(plot.title = element_text(hjust = 0.5, size = 12))
+                                            geom_boxplot(fill = 'deepskyblue3',) +
+                                            theme_bw() +
+                                            xlab('Province') +
+                                            ylab('Satisfaction with permit wait-time') +
+                                            ggtitle('Second work permit\n(Kruskal-Wallis Chi-squared: 13.88, df = 4, P = 0.0077)') +
+                                            theme(plot.title = element_text(hjust = 0.5, size = 12))
 
-# Quebec stats:
+# Satisfaction with second permit wait time (summary metrics):
+# Quebec
 mean(clean_data_filt_for_second$second_permit_timing_satisfaction[which(clean_data_filt_for_second$province_min20 == 'Quebec')])
 sd(clean_data_filt_for_second$second_permit_timing_satisfaction[which(clean_data_filt_for_second$province_min20 == 'Quebec')])
 
+# All other regions.
 mean(clean_data_filt_for_second$second_permit_timing_satisfaction[which(clean_data_filt_for_second$province_min20 != 'Quebec')])
 sd(clean_data_filt_for_second$second_permit_timing_satisfaction[which(clean_data_filt_for_second$province_min20 != 'Quebec')])
 
@@ -64,7 +67,7 @@ ggsave(filename = '/Users/gavin/Drive/science_policy/SPE/data/2023.05.03_CAPS_su
        dpi = 400)
 
 
-# Wait-times by province.
+# Wait times by province.
 first_permit_waittime_prov_summary <- return_count_and_percent_breakdown_by_provinceMin20(in_df = clean_data, column = 'first_permit_wait')
 first_permit_waittime_prov_count <- reshape2::acast(data = first_permit_waittime_prov_summary, formula = province ~ category, value.var = 'count')
 first_permit_waittime_prov_percent <- reshape2::acast(data = first_permit_waittime_prov_summary, formula = province ~ category, value.var = 'percent')
@@ -105,7 +108,7 @@ permit_waittime_prov_heatmap <- ComplexHeatmap::Heatmap(matrix = as.matrix(combi
                                                      column_labels = c('< 1', '1-3', '4-6', '> 6',
                                                                        '< 1', '1-3', '4-6', '> 6'),
                                                      column_gap = unit(5, "mm"),
-                                                     column_title = 'Permit wait-time',
+                                                     column_title = 'Permit wait time',
                                                      column_title_side = 'bottom',
                                                      cluster_columns = FALSE,
                                                      column_names_rot = 45,
@@ -118,13 +121,21 @@ ggsave(filename = '/Users/gavin/Drive/science_policy/SPE/data/2023.05.03_CAPS_su
        plot = grid.grabExpr(draw(permit_waittime_prov_heatmap,
                                  column_title_gp=grid::gpar(fontsize=16))),
        device = 'pdf',
-       width = 10,
-       height = 6,
+       width = 8.5,
+       height = 5,
        dpi = 400)
 
 second_permit_waittime_prov_count[is.na(second_permit_waittime_prov_count)] <- 0
-fisher.test(as.matrix(first_permit_waittime_prov_count), simulate.p.value=TRUE, B=1e7)
-fisher.test(as.matrix(second_permit_waittime_prov_count), simulate.p.value=TRUE, B=1e7)
+first_permit_waittime_prov_count_binary <- data.frame(less=first_permit_waittime_prov_count[, '< 1'],
+                                                      more=rowSums(first_permit_waittime_prov_count[, 2:4]))
+
+second_permit_waittime_prov_count_binary <- data.frame(less=second_permit_waittime_prov_count[, '< 1'],
+                                                      more=rowSums(second_permit_waittime_prov_count[, 2:4]))
+
+
+
+fisher.test(as.matrix(first_permit_waittime_prov_count_binary))
+fisher.test(as.matrix(second_permit_waittime_prov_count_binary))
 
 
 # COVID impacts.

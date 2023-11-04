@@ -6,13 +6,15 @@ library(cowplot)
 library(ggplot2)
 library(canadianmaps)
 
-source('/Users/gavin/Drive/science_policy/SPE/data/2023.05.03_CAPS_survey/CAPS_survey_analysis/0 - utility functions.R')
+source('/Users/gavin/Drive/science_policy/SPE/data/2023.05.03_CAPS_survey/CAPS_survey_analysis/caps_2021_survey/0_utility_functions.R')
 
 clean_data <- read.table('/Users/gavin/Drive/science_policy/SPE/data/2023.05.03_CAPS_survey/2021_CAPS_Workpermit_immigration_survey_responses_deidentified_prepped.txt',
                          header = TRUE, sep = '\t', stringsAsFactors = FALSE)
 
 
-# Province
+# Plot respondents per province.
+# Note that all provinces with respondents are displayed, even though
+# those with < 20 respondents were excluded from statistical analyses.
 NA_provinces <- rep(NA, length(PROV$PRENAME))
 names(NA_provinces) <- PROV$PRENAME
 
@@ -47,6 +49,12 @@ ggsave(filename = '/Users/gavin/Drive/science_policy/SPE/data/2023.05.03_CAPS_su
        height = 4,
        dpi = 400)
 
+# The rest of the script creates barcharts summarizing the % / counts of respondents in
+# different categories. These are made with the "return_count_and_percent_breakdown" function,
+# which was defined in the "0_utility_functions.R" script that was sourced at the top.
+
+# Note that several of the below barcharts were useful for exploring the data,
+# but were clearer to just report as counts and percentages in the main-text.
 
 # Sex
 overall_sex <- return_count_and_percent_breakdown(in_df = clean_data,
@@ -67,24 +75,25 @@ overall_disabled <- return_count_and_percent_breakdown(in_df = clean_data,
                                                        column = 'disabled_person')
 
 overall_disabled_plot <- ggplot(data = overall_disabled, aes(x = category, y = percent)) +
-  geom_col(position = 'stack', fill = '#111b42') +
-  geom_text(aes(x = category, y = percent, label = count), colour = 'white', vjust = 1.52) +
-  theme_bw() +
-  xlab('Disabled person') +
-  ylab(' Percentage of\nall respondents') +
-  theme(axis.title.y = element_text(angle = 0, vjust = 0.5, hjust = -0.5))
+                                geom_col(position = 'stack', fill = '#111b42') +
+                                geom_text(aes(x = category, y = percent, label = count), colour = 'white', vjust = 1.52) +
+                                theme_bw() +
+                                xlab('Disabled person') +
+                                ylab(' Percentage of\nall respondents') +
+                                theme(axis.title.y = element_text(angle = 0, vjust = 0.5, hjust = -0.5))
 
 
 # Race/ethnicity
-
 overall_race <- return_count_and_percent_breakdown(in_df = clean_data,
                                                    column = 'race_ethnicity')
-overall_race$category[which(overall_race$category == 'European/Caucasian')] <- 'European/\ncaucasian'
-overall_race$category[which(overall_race$category == 'Middle Eastern')] <- 'Middle\neastern'
+overall_race$category[which(overall_race$category == 'European/Caucasian')] <- 'European/\nCaucasian'
+overall_race$category[which(overall_race$category == 'Middle Eastern')] <- 'Middle\nEastern'
+
+# Ordered by frequency.
 overall_race$category <- factor(overall_race$category,
-                                levels = c('European/\ncaucasian',
+                                levels = c('European/\nCaucasian',
                                            'Asian',
-                                           'Middle\neastern',
+                                           'Middle\nEastern',
                                            'Hispanic',
                                            'African',
                                            'Other'))
@@ -97,13 +106,6 @@ overall_race_plot <- ggplot(data = overall_race, aes(x = category, y = percent))
                             ylab(' Percentage of\nall respondents') +
                             theme(axis.title.y = element_text(angle = 0, vjust = 0.5, hjust = -0.5)) +
                             ylim(0, 50)
-
-# Key demographic plot with sex and race breakdown.
-# sex_and_race_barplot <- cowplot::plot_grid(overall_sex_plot,
-#                                            overall_race_plot,
-#                                            ncol = 2,
-#                                            rel_widths = c(1.2, 2),
-#                                            labels = c('a', 'b'))
 
 # Decided to just go with race/ethnicity plot, as sex can be reported in the text.
 ggsave(filename = '/Users/gavin/Drive/science_policy/SPE/data/2023.05.03_CAPS_survey/plots/overall_race_plot.pdf',
@@ -122,18 +124,20 @@ overall_num.postdoc.positions$category <- factor(overall_num.postdoc.positions$c
                                                  levels = c('<1', '1', '2', '3', '4'))
 
 overall_num.postdoc.positions_plot <- ggplot(data = overall_num.postdoc.positions, aes(x = category, y = percent)) +
-  geom_col(position = 'stack', fill = '#111b42') +
-  geom_text(aes(x = category, y = percent, label = count), colour = 'white', vjust = 1.1) +
-  theme_bw() +
-  xlab('Number of postdoc positions') +
-  ylab(' Percentage of\nall respondents') +
-  theme(axis.title.y = element_text(angle = 0, vjust = 0.5, hjust = -0.5))
+                                            geom_col(position = 'stack', fill = '#111b42') +
+                                            geom_text(aes(x = category, y = percent, label = count), colour = 'white', vjust = 1.1) +
+                                            theme_bw() +
+                                            xlab('Number of postdoc positions') +
+                                            ylab(' Percentage of\nall respondents') +
+                                            theme(axis.title.y = element_text(angle = 0, vjust = 0.5, hjust = -0.5))
 
+# Summary statistics for text.
+# Note that < 1 was converted to 0 for this computation.
 num_postdocs_numeric <- clean_data$num_postdocs
 num_postdocs_numeric[which(num_postdocs_numeric == '<1')] <- '0'
 num_postdocs_numeric <- as.integer(num_postdocs_numeric)
 format(mean(num_postdocs_numeric), digits = 3)
-format(sd(num_postdocs_numeric), , digits = 3)
+format(sd(num_postdocs_numeric), digits = 3)
 
 ## Number of years as postdoc
 overall_num.years.postdoc <- return_count_and_percent_breakdown(in_df = clean_data,
@@ -143,12 +147,12 @@ overall_num.years.postdoc$category <- factor(overall_num.years.postdoc$category,
                                              levels = c('<1', '1', '2', '3', '4', '5+'))
 
 overall_num.years.postdoc_plot <- ggplot(data = overall_num.years.postdoc, aes(x = category, y = percent)) +
-  geom_col(position = 'stack', fill = '#111b42') +
-  geom_text(aes(x = category, y = percent, label = count), colour = 'white', vjust = 1.1) +
-  theme_bw() +
-  xlab('Years as postdoc') +
-  ylab(' Percentage of\nall respondents') +
-  theme(axis.title.y = element_text(angle = 0, vjust = 0.5, hjust = -0.5))
+                                        geom_col(position = 'stack', fill = '#111b42') +
+                                        geom_text(aes(x = category, y = percent, label = count), colour = 'white', vjust = 1.1) +
+                                        theme_bw() +
+                                        xlab('Years as postdoc') +
+                                        ylab(' Percentage of\nall respondents') +
+                                        theme(axis.title.y = element_text(angle = 0, vjust = 0.5, hjust = -0.5))
 
 # Summary metrics for text:
 num_years_numeric <- clean_data$years_postdoc
